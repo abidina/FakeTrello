@@ -25,6 +25,7 @@ namespace FakeTrello.Models
         {
         }
 
+        // dbContext is class that maps connection between database?
         public static ApplicationDbContext Create()
         {
             return new ApplicationDbContext();
