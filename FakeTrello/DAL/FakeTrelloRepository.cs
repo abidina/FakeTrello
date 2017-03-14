@@ -61,7 +61,9 @@ namespace FakeTrello.DAL
 
         public Board GetBoard(int boardId)
         {
-            throw new NotImplementedException();
+            // SELECT * FROM Boards WHERE BoardId == boardId
+            Board foundBoard = Context.Boards.FirstOrDefault(b => b.BoardId == boardId);
+            return foundBoard;
         }
 
         public List<Board> GetBoardsFromUser(string userId)

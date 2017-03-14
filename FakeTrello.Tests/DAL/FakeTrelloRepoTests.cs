@@ -13,6 +13,36 @@ namespace FakeTrello.Tests.DAL
     [TestClass]
     public class FakeTrelloRepoTests
     {
+        public Mock<FakeTrelloContext> fakeContext { get; set; }
+        public FakeTrelloRepository repo { get; set; }
+        public Mock<DbSet<Board>> mockBoardsSet { get; set; }
+        public IQueryable<Board> queryBoards { get; set; }
+        public List<Board> fakeBoardTable { get; set; }
+
+        [TestInitialize]
+        public void Setup()
+        {
+            fakeBoardTable = new List<Board>();
+            fakeContext = new Mock<FakeTrelloContext>();
+            mockBoardsSet = new Mock<DbSet<Board>>();
+            repo = new FakeTrelloRepository(fakeContext.Object);
+            // IQueryable<Board>
+            queryBoards = fakeBoardTable.AsQueryable(); //Re-express this list as something that understands queries
+
+        }
+
+        private void CreateFakeDatabase()
+        {
+            mockBoardsSet.Setup(b => b.Add(It.IsAny<Board>())).Callback((Board board) => fakeBoardTable.Add(board));
+            fakeContext.Setup(c => c.Boards).Returns(mockBoardsSet.Object); //Context.Boards returns a fakeBoardTable (a list)
+
+            // Hey LINQ, use the Provider from our FAKE board table/list
+            mockBoardsSet.As<IQueryable<Board>>().Setup(b => b.Provider).Returns(queryBoards.Provider);
+            mockBoardsSet.As<IQueryable<Board>>().Setup(b => b.Expression).Returns(queryBoards.Expression);
+            mockBoardsSet.As<IQueryable<Board>>().Setup(b => b.ElementType).Returns(queryBoards.ElementType);
+            mockBoardsSet.As<IQueryable<Board>>().Setup(b => b.GetEnumerator()).Returns(() => queryBoards.GetEnumerator());
+        }
+
 
         [TestMethod]
         public void EnsureICanCreateInstanceOfRepo()
@@ -45,22 +75,8 @@ namespace FakeTrello.Tests.DAL
             //Arrange
             List<Board> fakeBoardTable = new List<Board>();
 
-            // IQueryable<Board>
-            var queryBoards = fakeBoardTable.AsQueryable(); //Re-express this list as something that understands queries
+            CreateFakeDatabase();
 
-            Mock<FakeTrelloContext> fakeContext = new Mock<FakeTrelloContext>();
-            Mock<DbSet<Board>> mockBoardsSet = new Mock<DbSet<Board>>();
-
-            // Hey LINQ, use the Provider from our FAKE board table/list
-            mockBoardsSet.As<IQueryable<Board>>().Setup(b => b.Provider).Returns(queryBoards.Provider);
-            mockBoardsSet.As<IQueryable<Board>>().Setup(b => b.Expression).Returns(queryBoards.Expression);
-            mockBoardsSet.As<IQueryable<Board>>().Setup(b => b.ElementType).Returns(queryBoards.ElementType);
-            mockBoardsSet.As<IQueryable<Board>>().Setup(b => b.GetEnumerator()).Returns(() => queryBoards.GetEnumerator());
-
-            mockBoardsSet.Setup(b => b.Add(It.IsAny<Board>())).Callback((Board board) => fakeBoardTable.Add(board));
-            fakeContext.Setup(c => c.Boards).Returns(mockBoardsSet.Object); //Context.Boards returns a fakeBoardTable (a list)
-
-            FakeTrelloRepository repo = new FakeTrelloRepository(fakeContext.Object);
             ApplicationUser user = new ApplicationUser
             {
                 Id = "myUserId",
@@ -79,27 +95,8 @@ namespace FakeTrello.Tests.DAL
         public void EnsureICanReturnBoards()
         {
             //Arrange
-            List<Board> fakeBoardTable = new List<Board>
-            {
-                new Board { Name = "My Board" }
-            };
-
-            var queryBoards = fakeBoardTable.AsQueryable(); //Re-express this list as something that understands queries
-
-            Mock<FakeTrelloContext> fakeContext = new Mock<FakeTrelloContext>();
-            Mock<DbSet<Board>> mockBoardsSet = new Mock<DbSet<Board>>();
-
-            // Hey LINQ, use the Provider from our FAKE board table/list
-            mockBoardsSet.As<IQueryable<Board>>().Setup(b => b.Provider).Returns(queryBoards.Provider);
-            mockBoardsSet.As<IQueryable<Board>>().Setup(b => b.Expression).Returns(queryBoards.Expression);
-            mockBoardsSet.As<IQueryable<Board>>().Setup(b => b.ElementType).Returns(queryBoards.ElementType);
-            mockBoardsSet.As<IQueryable<Board>>().Setup(b => b.GetEnumerator()).Returns(() => queryBoards.GetEnumerator());
-
-            mockBoardsSet.Setup(b => b.Add(It.IsAny<Board>())).Callback((Board board) => fakeBoardTable.Add(board));
-            fakeContext.Setup(c => c.Boards).Returns(mockBoardsSet.Object); //Context.Boards returns a fakeBoardTable (a list)
-
-            //Mock<FakeTrelloContext> mockContext = new Mock<FakeTrelloContext>();
-            FakeTrelloRepository repo = new FakeTrelloRepository(fakeContext.Object);
+            fakeBoardTable.Add(new Board { Name = "My Board"});
+            CreateFakeDatabase();
 
             //Act
             int expectedBoardCount = 1;
@@ -108,6 +105,21 @@ namespace FakeTrello.Tests.DAL
             //Assert
             Assert.AreEqual(expectedBoardCount, actualBoardCount);
 
+        }
+
+        [TestMethod]
+        public void EnsureICanFindABoard()
+        {
+            // Arrange
+            fakeBoardTable.Add(new Board { BoardId = 1, Name = "My Board" });
+            CreateFakeDatabase();
+
+            //Act
+            string expectedBoardName = "My Board";
+            string actualBoardName = repo.GetBoard(1).Name;
+
+            //Assert
+            Assert.AreEqual(expectedBoardName, actualBoardName);
         }
     }
 }
