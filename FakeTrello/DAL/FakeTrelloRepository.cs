@@ -24,7 +24,9 @@ namespace FakeTrello.DAL
 
         public void AddBoard(string name, ApplicationUser owner)
         {
-            throw new NotImplementedException();
+            Board board = new Board() { Name = name, Owner = owner };
+            Context.Boards.Add(board);
+            Context.SaveChanges();
         }
 
         public void AddCard(string name, int listId, string ownerId)
