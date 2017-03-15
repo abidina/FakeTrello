@@ -41,6 +41,8 @@ namespace FakeTrello.Tests.DAL
             mockBoardsSet.As<IQueryable<Board>>().Setup(b => b.Expression).Returns(queryBoards.Expression);
             mockBoardsSet.As<IQueryable<Board>>().Setup(b => b.ElementType).Returns(queryBoards.ElementType);
             mockBoardsSet.As<IQueryable<Board>>().Setup(b => b.GetEnumerator()).Returns(() => queryBoards.GetEnumerator());
+            mockBoardsSet.Setup(b => b.Remove(It.IsAny<Board>())).Callback((Board board) => fakeBoardTable.Remove(board));
+
         }
 
 
@@ -120,6 +122,25 @@ namespace FakeTrello.Tests.DAL
 
             //Assert
             Assert.AreEqual(expectedBoardName, actualBoardName);
+        }
+
+        [TestMethod]
+        public void EnsureICanRemoveBoard()
+        {
+            ApplicationUser Sally = new ApplicationUser();
+            //Arrange
+            fakeBoardTable.Add(new Board { BoardId = 1, Name = "My Board", Owner = Sally });
+            fakeBoardTable.Add(new Board { BoardId = 2, Name = "My Board", Owner = Sally });
+            fakeBoardTable.Add(new Board { BoardId = 3, Name = "My Board", Owner = Sally });
+            CreateFakeDatabase();
+
+            //Act
+            int expectedBoardCount = 2;
+            repo.RemoveBoard(3);
+            int actualBoardCount = repo.Context.Boards.Count();
+
+            //Assert
+            Assert.AreEqual(expectedBoardCount, actualBoardCount);
         }
     }
 }

@@ -68,7 +68,7 @@ namespace FakeTrello.DAL
 
         public List<Board> GetBoardsFromUser(string userId)
         {
-            throw new NotImplementedException();
+            return Context.Boards.Where(b => b.Owner.Id == userId).ToList();
         }
 
         public Card GetCard(int cardId)
@@ -108,7 +108,14 @@ namespace FakeTrello.DAL
 
         public bool RemoveBoard(int boardId)
         {
-            throw new NotImplementedException();
+            Board foundBoard = GetBoard(boardId);
+            if (foundBoard != null)
+            {
+                Context.Boards.Remove(foundBoard);
+                Context.SaveChanges();
+                return true;
+            }
+            return false;
         }
 
         public bool RemoveCard(int cardId)
