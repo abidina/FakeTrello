@@ -33,8 +33,10 @@ namespace FakeTrello.Tests.DAL
 
         private void CreateFakeDatabase()
         {
+            // FINISH THIS LINE OF CODE mockBoardsSet.Setup(b => b.Remove)
             mockBoardsSet.Setup(b => b.Add(It.IsAny<Board>())).Callback((Board board) => fakeBoardTable.Add(board));
             fakeContext.Setup(c => c.Boards).Returns(mockBoardsSet.Object); //Context.Boards returns a fakeBoardTable (a list)
+            fakeContext.Setup(c => c.SaveChanges()).Returns(0).Verifiable();
 
             // Hey LINQ, use the Provider from our FAKE board table/list
             mockBoardsSet.As<IQueryable<Board>>().Setup(b => b.Provider).Returns(queryBoards.Provider);
@@ -159,6 +161,25 @@ namespace FakeTrello.Tests.DAL
 
             //Assert
             Assert.AreEqual(expectedBoardCount, actualBoardCount);
+        }
+
+        [TestMethod]
+        public void EnsureICanEditBoardName()
+        {
+            ApplicationUser Sally = new ApplicationUser();
+
+            //Arrange
+            fakeBoardTable.Add(new Board { BoardId = 1, Name = "My Board", Owner = Sally });
+            CreateFakeDatabase();
+
+            //Act
+            string expectedBoardName = "Our Board";
+            repo.EditBoardName(1, expectedBoardName);
+            string actualBoardName = repo.GetBoard(1).Name;
+
+            //Assert
+            Assert.AreEqual(expectedBoardName, actualBoardName);
+            fakeContext.Verify(c => c.SaveChanges(), Times.Once());
         }
     }
 }
