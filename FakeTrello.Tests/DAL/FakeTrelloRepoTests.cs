@@ -125,6 +125,24 @@ namespace FakeTrello.Tests.DAL
         }
 
         [TestMethod]
+        public void EnsureICanGetUserBoard()
+        {
+            ApplicationUser Sally = new ApplicationUser();
+            //Arrange
+            fakeBoardTable.Add(new Board { BoardId = 1, Name = "My Board", Owner = Sally });
+            fakeBoardTable.Add(new Board { BoardId = 2, Name = "My Board", Owner = Sally });
+            fakeBoardTable.Add(new Board { BoardId = 3, Name = "My Board", Owner = Sally });
+            CreateFakeDatabase();
+
+            //Act
+            int expectedBoardCount = 3;
+            int actualBoardCount = repo.GetBoardsFromUser(Sally.Id).Count;
+
+            //Assert
+            Assert.AreEqual(expectedBoardCount, actualBoardCount);
+        }
+
+        [TestMethod]
         public void EnsureICanRemoveBoard()
         {
             ApplicationUser Sally = new ApplicationUser();
