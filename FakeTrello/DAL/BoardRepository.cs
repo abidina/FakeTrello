@@ -1,22 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Data.SqlClient;
-using System.Diagnostics;
+using System.Linq;
+using System.Web;
 using FakeTrello.Models;
+using System.Data.SqlClient;
+using System.Configuration;
 
 namespace FakeTrello.DAL
 {
-    public class FakeTrelloRepository : IRepository, IBoardManager, IBoardQuery, ICardRepository, IListRepository
+    public class BoardRepository : IBoardManager, IBoardQuery
     {
         //private FakeTrelloContext context; // Data member
         SqlConnection _trelloConnection;
 
-        public FakeTrelloRepository()
+        public BoardRepository()
         {
             _trelloConnection = new SqlConnection(ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString);
         }
+
+
 
         public void AddBoard(string name, ApplicationUser owner)
         {
@@ -50,35 +52,6 @@ namespace FakeTrello.DAL
             }
         }
 
-        public void AddCard(string name, int listId, string ownerId)
-        {
-            //throw new NotImplementedException();
-        }
-
-        public void AddCard(string name, List list, ApplicationUser owner)
-        {
-            //throw new NotImplementedException();
-        }
-
-        public void AddList(string name, int boardId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void AddList(string name, Board board)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool AttachUser(string userId, int cardId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool CopyCard(int cardId, int newListId, string newOwnerId)
-        {
-            throw new NotImplementedException();
-        }
 
         public Board GetBoard(int boardId)
         {
@@ -104,19 +77,19 @@ namespace FakeTrello.DAL
                         BoardId = reader.GetInt32(0),
                         Name = reader.GetString(1),
                         URL = reader.GetString(2),
-                        Owner = new ApplicationUser {Id = reader.GetString(3)}
+                        Owner = new ApplicationUser { Id = reader.GetString(3) }
                     };
                     return board;
                 }
             }
-            catch(Exception ex) { }
+            catch (Exception ex) { }
             finally
             {
                 _trelloConnection.Close();
             }
 
             return null;
-            
+
         }
 
         public List<Board> GetBoardsFromUser(string userId)
@@ -164,41 +137,6 @@ namespace FakeTrello.DAL
 
         }
 
-        public Card GetCard(int cardId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<ApplicationUser> GetCardAttendees(int cardId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<Card> GetCardsFromBoard(int boardId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<Card> GetCardsFromList(int listId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List GetList(int listId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<List> GetListsFromBoard(int boardId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool MoveCard(int cardId, int oldListId, int newListId)
-        {
-            throw new NotImplementedException();
-        }
-
         public bool RemoveBoard(int boardId)
         {
             _trelloConnection.Open();
@@ -230,17 +168,7 @@ namespace FakeTrello.DAL
             }
 
             return false;
-            
-        }
 
-        public bool RemoveCard(int cardId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool RemoveList(int listId)
-        {
-            throw new NotImplementedException();
         }
 
         public void EditBoardName(int boardId, string newname)
@@ -282,4 +210,7 @@ namespace FakeTrello.DAL
             }
 
         }
+
+
+    }
 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FakeTrello.DAL
 {
-    public interface IRepository
+    interface ICardRepository
     {
         // List of methods to help deliver features
         // Create
@@ -18,7 +18,7 @@ namespace FakeTrello.DAL
         List<Card> GetCardsFromList(int listId);
         List<Card> GetCardsFromBoard(int boardId);
         Card GetCard(int cardId);
-        List<ApplicationUser> GetCardAttendees(int cardId); 
+        List<ApplicationUser> GetCardAttendees(int cardId);
 
         // Update
         bool AttachUser(string userId, int cardId); // true: successful, false: not successful
@@ -27,5 +27,6 @@ namespace FakeTrello.DAL
 
         // Delete
         bool RemoveCard(int cardId);
+
     }
 }
